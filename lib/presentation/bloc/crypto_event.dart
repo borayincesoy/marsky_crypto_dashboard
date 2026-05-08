@@ -51,3 +51,7 @@ class RemoveFavoriteRequested extends CryptoEvent {
   @override
   List<Object?> get props => [cryptoId];
 }
+
+class LoadFavoritesRequested extends CryptoEvent {
+  const LoadFavoritesRequested();
+}

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../env.dart';
 import '../models/crypto_model.dart';
 
 abstract class CryptoRemoteDataSource {
@@ -7,13 +8,12 @@ abstract class CryptoRemoteDataSource {
     required int limit,
     String? orderBy,
     String? orderDirection,
+    List<String>? uuids,
   });
 }
 
 class CoinRankingRemoteDataSource implements CryptoRemoteDataSource {
   static const String _baseUrl = 'https://api.coinranking.com/v2';
-  static const String _apiKey =
-      'coinranking-key-here'; // Replace with actual key
 
   final Dio _dio;
 
@@ -33,9 +33,13 @@ class CoinRankingRemoteDataSource implements CryptoRemoteDataSource {
     required int limit,
     String? orderBy,
     String? orderDirection,
+    List<String>? uuids,
   }) async {
     try {
-      final params = {'limit': limit.toString(), 'offset': offset.toString()};
+      final Map<String, dynamic> params = {
+        'limit': limit.toString(),
+        'offset': offset.toString(),
+      };
 
       if (orderBy != null) {
         params['orderBy'] = orderBy;
@@ -45,10 +49,14 @@ class CoinRankingRemoteDataSource implements CryptoRemoteDataSource {
         params['orderDirection'] = orderDirection;
       }
 
+      if (uuids != null && uuids.isNotEmpty) {
+        params['uuids[]'] = uuids;
+      }
+
       final response = await _dio.get(
         '/coins',
         queryParameters: params,
-        options: Options(headers: {'x-access-token': _apiKey}),
+        options: Options(headers: {'x-access-token': coinRankingApiKey}),
       );
 
       if (response.statusCode == 200) {

@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Giriş Yap')),
+      appBar: AppBar(title: const Text('Login')),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
@@ -76,12 +76,12 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
-                        labelText: 'E-posta',
+                        labelText: 'Email',
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'E-posta girin';
+                          return 'Enter email';
                         }
                         return null;
                       },
@@ -91,12 +91,12 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _passwordController,
                       obscureText: true,
                       decoration: const InputDecoration(
-                        labelText: 'Parola',
+                        labelText: 'Password',
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Parola girin';
+                          return 'Enter password';
                         }
                         return null;
                       },
@@ -115,7 +115,7 @@ class _LoginPageState extends State<LoginPage> {
                                     color: Colors.white,
                                   ),
                                 )
-                              : const Text('Giriş Yap'),
+                              : const Text('Login'),
                         );
                       },
                     ),
@@ -124,7 +124,7 @@ class _LoginPageState extends State<LoginPage> {
                       onPressed: () {
                         Navigator.pushNamed(context, RegisterPage.routeName);
                       },
-                      child: const Text('Hesabın yok mu? Kayıt ol'),
+                      child: const Text("Don't have an account? Register"),
                     ),
                   ],
                 ),

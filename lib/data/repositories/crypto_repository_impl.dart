@@ -55,13 +55,13 @@ class CryptoRepositoryImpl implements CryptoRepository {
   }
 
   @override
-  Future<void> addFavorite(String cryptoId) {
-    return localDataSource.addFavorite(cryptoId);
+  Future<void> addFavorite(String cryptoId) async {
+    await localDataSource.addFavorite(cryptoId);
   }
 
   @override
-  Future<void> removeFavorite(String cryptoId) {
-    return localDataSource.removeFavorite(cryptoId);
+  Future<void> removeFavorite(String cryptoId) async {
+    await localDataSource.removeFavorite(cryptoId);
   }
 
   @override
@@ -80,22 +80,14 @@ class CryptoRepositoryImpl implements CryptoRepository {
       return [];
     }
 
-    final allCryptos = await remoteDataSource.getCryptos(
-      offset: 0,
-      limit: 1000,
+    // CoinRanking API allows filtering by UUIDs using the uuids[] parameter
+    final favoriteModels = await remoteDataSource.getCryptos(
+      offset: offset,
+      limit: limit,
+      uuids: favorites,
     );
 
-    final favoritesCryptos = allCryptos
-        .where((crypto) => favorites.contains(crypto.id))
-        .toList();
-
-    final start = offset;
-    final end = (offset + limit > favoritesCryptos.length)
-        ? favoritesCryptos.length
-        : offset + limit;
-
-    return favoritesCryptos
-        .sublist(start, end)
+    return favoriteModels
         .map((model) => _modelToEntity(model.copyWith(isFavorite: true)))
         .toList();
   }

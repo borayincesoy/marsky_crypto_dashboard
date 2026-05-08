@@ -2,19 +2,24 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'data/datasources/auth_remote_data_source.dart';
 import 'data/datasources/crypto_local_data_source.dart';
+import 'data/datasources/auth_remote_data_source.dart';
 import 'data/datasources/crypto_remote_data_source.dart';
+import 'data/datasources/crypto_price_history_remote_data_source.dart';
 import 'data/repositories/auth_repository_impl.dart';
 import 'data/repositories/crypto_repository_impl.dart';
+import 'data/repositories/crypto_price_history_repository_impl.dart';
 import 'domain/usecases/login_usecase.dart';
 import 'domain/usecases/logout_usecase.dart';
 import 'domain/usecases/register_usecase.dart';
 import 'domain/usecases/get_cryptos_usecase.dart';
 import 'domain/usecases/add_favorite_usecase.dart';
 import 'domain/usecases/remove_favorite_usecase.dart';
+import 'domain/usecases/get_favorites_usecase.dart';
+import 'domain/usecases/get_price_history_usecase.dart';
 import 'presentation/bloc/auth_bloc.dart';
 import 'presentation/bloc/crypto_bloc.dart';
+import 'presentation/bloc/crypto_detail_bloc.dart';
 import 'presentation/pages/home_page.dart';
 import 'presentation/pages/login_page.dart';
 import 'presentation/pages/register_page.dart';
@@ -26,8 +31,8 @@ Future<void> main() async {
 
   // Initialize Hive
   await Hive.initFlutter();
-  final localDataSource = HiveCryptoLocalDataSource();
-  await localDataSource.init();
+  final favoritesBox = await Hive.openBox('marsky_persistent_favs');
+  final localDataSource = HiveCryptoLocalDataSource(favoritesBox);
 
   final hasValidSupabaseConfig =
       supabaseUrl.isNotEmpty &&
@@ -57,6 +62,15 @@ Future<void> main() async {
   final getCryptosUseCase = GetCryptosUseCase(cryptoRepository);
   final addFavoriteUseCase = AddFavoriteUseCase(cryptoRepository);
   final removeFavoriteUseCase = RemoveFavoriteUseCase(cryptoRepository);
+  final getFavoritesUseCase = GetFavoritesUseCase(cryptoRepository);
+
+  // Price History setup
+  final priceHistoryRemoteDataSource =
+      CoinRankingPriceHistoryRemoteDataSource();
+  final priceHistoryRepository = CryptoPriceHistoryRepositoryImpl(
+    remoteDataSource: priceHistoryRemoteDataSource,
+  );
+  final getPriceHistoryUseCase = GetPriceHistoryUseCase(priceHistoryRepository);
 
   runApp(
     MyApp(
@@ -67,6 +81,8 @@ Future<void> main() async {
       getCryptosUseCase: getCryptosUseCase,
       addFavoriteUseCase: addFavoriteUseCase,
       removeFavoriteUseCase: removeFavoriteUseCase,
+      getFavoritesUseCase: getFavoritesUseCase,
+      getPriceHistoryUseCase: getPriceHistoryUseCase,
     ),
   );
 }
@@ -79,6 +95,8 @@ class MyApp extends StatelessWidget {
   final GetCryptosUseCase getCryptosUseCase;
   final AddFavoriteUseCase addFavoriteUseCase;
   final RemoveFavoriteUseCase removeFavoriteUseCase;
+  final GetFavoritesUseCase getFavoritesUseCase;
+  final GetPriceHistoryUseCase getPriceHistoryUseCase;
 
   const MyApp({
     super.key,
@@ -89,6 +107,8 @@ class MyApp extends StatelessWidget {
     required this.getCryptosUseCase,
     required this.addFavoriteUseCase,
     required this.removeFavoriteUseCase,
+    required this.getFavoritesUseCase,
+    required this.getPriceHistoryUseCase,
   });
 
   @override
@@ -114,15 +134,52 @@ class MyApp extends StatelessWidget {
             getCryptosUseCase: getCryptosUseCase,
             addFavoriteUseCase: addFavoriteUseCase,
             removeFavoriteUseCase: removeFavoriteUseCase,
+            getFavoritesUseCase: getFavoritesUseCase,
           ),
+        ),
+        BlocProvider(
+          create: (_) =>
+              CryptoDetailBloc(getPriceHistoryUseCase: getPriceHistoryUseCase),
         ),
       ],
       child: MaterialApp(
         title: 'Marsky Crypto Dashboard',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF1A1C1E),
+            primary: const Color(0xFF1A1C1E),
+            secondary: const Color(0xFF6C757D),
+            surface: Colors.white,
+          ),
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Color(0xFF1A1C1E),
+            foregroundColor: Colors.white,
+            elevation: 0,
+            centerTitle: true,
+          ),
+          tabBarTheme: const TabBarThemeData(
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
+            indicatorColor: Colors.white,
+            indicatorSize: TabBarIndicatorSize.tab,
+          ),
+          cardTheme: CardThemeData(
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1A1C1E),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
         ),
-        initialRoute: LoginPage.routeName,
+        initialRoute: Supabase.instance.client.auth.currentSession != null
+            ? HomePage.routeName
+            : LoginPage.routeName,
         routes: {
           LoginPage.routeName: (_) => const LoginPage(),
           RegisterPage.routeName: (_) => const RegisterPage(),

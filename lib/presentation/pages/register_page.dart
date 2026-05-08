@@ -40,7 +40,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Kayıt Ol')),
+      appBar: AppBar(title: const Text('Register')),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
@@ -64,7 +64,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Text(
-                      'Yeni Hesap Oluştur',
+                      'Create New Account',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 26,
@@ -76,12 +76,12 @@ class _RegisterPageState extends State<RegisterPage> {
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
-                        labelText: 'E-posta',
+                        labelText: 'Email',
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'E-posta girin';
+                          return 'Enter email';
                         }
                         return null;
                       },
@@ -91,15 +91,15 @@ class _RegisterPageState extends State<RegisterPage> {
                       controller: _passwordController,
                       obscureText: true,
                       decoration: const InputDecoration(
-                        labelText: 'Parola',
+                        labelText: 'Password',
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Parola girin';
+                          return 'Enter password';
                         }
                         if (value.length < 6) {
-                          return 'Parola en az 6 karakter olmalı';
+                          return 'Password must be at least 6 characters';
                         }
                         return null;
                       },
@@ -118,7 +118,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                     color: Colors.white,
                                   ),
                                 )
-                              : const Text('Kayıt Ol'),
+                              : const Text('Register'),
                         );
                       },
                     ),

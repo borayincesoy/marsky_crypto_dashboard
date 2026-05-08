@@ -18,6 +18,7 @@ class CryptoLoading extends CryptoState {
 
 class CryptoLoaded extends CryptoState {
   final List<CryptoEntity> cryptos;
+  final List<CryptoEntity> favorites;
   final int currentPage;
   final int totalPages;
   final String? currentSort;
@@ -25,6 +26,7 @@ class CryptoLoaded extends CryptoState {
 
   const CryptoLoaded({
     required this.cryptos,
+    this.favorites = const [],
     required this.currentPage,
     required this.totalPages,
     this.currentSort,
@@ -34,11 +36,30 @@ class CryptoLoaded extends CryptoState {
   @override
   List<Object?> get props => [
     cryptos,
+    favorites,
     currentPage,
     totalPages,
     currentSort,
     currentSortDirection,
   ];
+
+  CryptoLoaded copyWith({
+    List<CryptoEntity>? cryptos,
+    List<CryptoEntity>? favorites,
+    int? currentPage,
+    int? totalPages,
+    String? currentSort,
+    String? currentSortDirection,
+  }) {
+    return CryptoLoaded(
+      cryptos: cryptos ?? this.cryptos,
+      favorites: favorites ?? this.favorites,
+      currentPage: currentPage ?? this.currentPage,
+      totalPages: totalPages ?? this.totalPages,
+      currentSort: currentSort ?? this.currentSort,
+      currentSortDirection: currentSortDirection ?? this.currentSortDirection,
+    );
+  }
 }
 
 class CryptoError extends CryptoState {
