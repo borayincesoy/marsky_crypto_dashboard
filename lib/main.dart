@@ -1,6 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'data/datasources/crypto_local_data_source.dart';
 import 'data/datasources/auth_remote_data_source.dart';
@@ -31,8 +31,7 @@ Future<void> main() async {
 
   // Initialize Hive
   await Hive.initFlutter();
-  final favoritesBox = await Hive.openBox('marsky_persistent_favs');
-  final localDataSource = HiveCryptoLocalDataSource(favoritesBox);
+  final localDataSource = HiveCryptoLocalDataSource();
 
   final hasValidSupabaseConfig =
       supabaseUrl.isNotEmpty &&
@@ -42,6 +41,12 @@ Future<void> main() async {
 
   if (hasValidSupabaseConfig) {
     await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
+  }
+  
+  // If user is already logged in, set their ID immediately
+  final currentSession = Supabase.instance.client.auth.currentSession;
+  if (currentSession != null) {
+    await localDataSource.setUserId(currentSession.user.id);
   }
 
   // Auth setup
@@ -83,6 +88,7 @@ Future<void> main() async {
       removeFavoriteUseCase: removeFavoriteUseCase,
       getFavoritesUseCase: getFavoritesUseCase,
       getPriceHistoryUseCase: getPriceHistoryUseCase,
+      localDataSource: localDataSource,
     ),
   );
 }
@@ -97,6 +103,7 @@ class MyApp extends StatelessWidget {
   final RemoveFavoriteUseCase removeFavoriteUseCase;
   final GetFavoritesUseCase getFavoritesUseCase;
   final GetPriceHistoryUseCase getPriceHistoryUseCase;
+  final CryptoLocalDataSource localDataSource;
 
   const MyApp({
     super.key,
@@ -109,6 +116,7 @@ class MyApp extends StatelessWidget {
     required this.removeFavoriteUseCase,
     required this.getFavoritesUseCase,
     required this.getPriceHistoryUseCase,
+    required this.localDataSource,
   });
 
   @override
@@ -127,6 +135,7 @@ class MyApp extends StatelessWidget {
             loginUseCase: loginUseCase,
             registerUseCase: registerUseCase,
             logoutUseCase: logoutUseCase,
+            localDataSource: localDataSource,
           ),
         ),
         BlocProvider(

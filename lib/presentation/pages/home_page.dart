@@ -274,7 +274,7 @@ class _HomePageState extends State<HomePage>
                           onPressed: _showSortOptions,
                           icon: const Icon(Icons.sort, size: 18),
                           label: Text(
-                            'Sort: ${_sortBy != null ? _getSortLabel(_sortBy!) : 'Default'}',
+                            'Sort: ${_sortBy != null ? _getSortLabel(_sortBy!) : 'Market Rank'}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -335,8 +335,8 @@ class _HomePageState extends State<HomePage>
                             );
                           },
                         ),
-                      );
-                    }
+                        );
+                      }
 
                       return const Center(child: Text('Loading data...'));
                     },

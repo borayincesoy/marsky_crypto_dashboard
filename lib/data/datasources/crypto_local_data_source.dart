@@ -8,29 +8,48 @@ abstract class CryptoLocalDataSource {
 }
 
 class HiveCryptoLocalDataSource implements CryptoLocalDataSource {
-  final Box _box;
+  Box? _box;
+  String? _currentUserId;
 
-  HiveCryptoLocalDataSource(this._box);
+  HiveCryptoLocalDataSource();
+
+  Future<void> setUserId(String userId) async {
+    if (_currentUserId == userId && _box != null) return;
+    
+    if (_box != null) await _box!.close();
+    
+    _currentUserId = userId;
+    _box = await Hive.openBox('favs_$userId');
+  }
+
+  Box get _activeBox {
+    if (_box == null) {
+      throw Exception('Local database not initialized for user. Please login again.');
+    }
+    return _box!;
+  }
 
   @override
   Future<void> addFavorite(String cryptoId) async {
-    await _box.put(cryptoId, true);
-    await _box.flush();
+    await _activeBox.put(cryptoId, true);
+    await _activeBox.flush();
   }
 
   @override
   Future<void> removeFavorite(String cryptoId) async {
-    await _box.delete(cryptoId);
-    await _box.flush();
+    await _activeBox.delete(cryptoId);
+    await _activeBox.flush();
   }
 
   @override
   Future<List<String>> getFavorites() async {
-    return _box.keys.map((e) => e.toString()).toList();
+    if (_box == null) return [];
+    return _activeBox.keys.map((e) => e.toString()).toList();
   }
 
   @override
   Future<bool> isFavorite(String cryptoId) async {
-    return _box.get(cryptoId, defaultValue: false) == true;
+    if (_box == null) return false;
+    return _activeBox.get(cryptoId, defaultValue: false) == true;
   }
 }
