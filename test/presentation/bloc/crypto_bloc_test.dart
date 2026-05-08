@@ -51,7 +51,7 @@ void main() {
       priceChange: 5.0,
       marketCap: 1000000000.0,
       volume24h: 500000000.0,
-      sparkline: [],
+      sparkline: '50000,51000,52000',
       isFavorite: false,
     ),
   ];

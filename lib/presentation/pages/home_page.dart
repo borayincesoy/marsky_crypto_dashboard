@@ -148,7 +148,7 @@ class _HomePageState extends State<HomePage>
                     } else if (_sortBy == option['value']) {
                       _sortDirection = _sortDirection == 'desc' ? 'asc' : 'desc';
                     } else {
-                      _sortBy = option['value'] as String?;
+                      _sortBy = option['value'];
                       _sortDirection = 'desc';
                     }
                     _currentPage = 1;

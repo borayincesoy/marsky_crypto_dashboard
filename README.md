@@ -63,5 +63,5 @@ The project includes **Unit Tests** for the core business logic:
 
 ## 👨‍💻 Author
 
-**Boray İncesoy**
+**Ahmet Boray İncesoy**
 -   GitHub: [@borayincesoy](https://github.com/borayincesoy)
