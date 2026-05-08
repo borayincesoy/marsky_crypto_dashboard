@@ -94,7 +94,7 @@ class _HomePageState extends State<HomePage>
   }
 
   void _showSortOptions() {
-    final sortOptions = [
+    final List<Map<String, String?>> sortOptions = [
       {'label': 'Market Rank', 'value': null},
       {'label': 'Market Cap', 'value': 'marketCap'},
       {'label': '24h Volume', 'value': '24hVolume'},
@@ -126,7 +126,7 @@ class _HomePageState extends State<HomePage>
                   color: isSelected ? Theme.of(context).primaryColor : Colors.grey,
                 ),
                 title: Text(
-                  option['label'] as String,
+                  option['label']!,
                   style: TextStyle(
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     color: isSelected ? Theme.of(context).primaryColor : Colors.black87,

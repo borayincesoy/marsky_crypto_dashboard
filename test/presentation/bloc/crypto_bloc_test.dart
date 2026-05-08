@@ -73,7 +73,7 @@ void main() {
         const CryptoLoading(),
         CryptoLoaded(
           cryptos: tCryptoList,
-          favorites: const [],
+          favorites: const <CryptoEntity>[],
           currentPage: 1,
           totalPages: 1,
         ),
