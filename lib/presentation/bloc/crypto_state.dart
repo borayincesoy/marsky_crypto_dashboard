@@ -63,10 +63,11 @@ class CryptoLoaded extends CryptoState {
 }
 
 class CryptoError extends CryptoState {
+  final String title;
   final String message;
 
-  const CryptoError(this.message);
+  const CryptoError({required this.title, required this.message});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [title, message];
 }

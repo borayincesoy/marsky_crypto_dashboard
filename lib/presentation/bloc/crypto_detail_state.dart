@@ -32,10 +32,11 @@ class CryptoDetailLoaded extends CryptoDetailState {
 }
 
 class CryptoDetailError extends CryptoDetailState {
+  final String title;
   final String message;
 
-  const CryptoDetailError(this.message);
+  const CryptoDetailError({required this.title, required this.message});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [title, message];
 }

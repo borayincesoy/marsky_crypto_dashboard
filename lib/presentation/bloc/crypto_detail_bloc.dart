@@ -12,32 +12,39 @@ class CryptoDetailBloc extends Bloc<CryptoDetailEvent, CryptoDetailState> {
     on<FetchCryptoDetailRequested>(_onFetchCryptoDetailRequested);
   }
 
-  String _mapErrorToMessage(Object error) {
+  CryptoDetailError _mapErrorToState(Object error) {
     if (error is DioException) {
       if (error.type == DioExceptionType.connectionTimeout ||
           error.type == DioExceptionType.sendTimeout ||
           error.type == DioExceptionType.receiveTimeout) {
-        return 'The server is taking too long to respond. Please try again.';
+        return const CryptoDetailError(
+          title: 'Connection Timed Out',
+          message: 'The server is taking too long to respond. Please check your internet.',
+        );
       } else if (error.type == DioExceptionType.connectionError) {
-        return 'No internet connection. Please check your network settings.';
+        return const CryptoDetailError(
+          title: 'No Internet Connection',
+          message: 'Please check your network settings and try again.',
+        );
       }
 
       switch (error.response?.statusCode) {
         case 401:
-          return 'Unauthorized access. Please check your API key.';
-        case 403:
-          return 'Access forbidden. You might have reached your rate limit.';
-        case 404:
-          return 'Requested data not found.';
-        case 422:
-          return 'Invalid request parameters.';
-        case 500:
-          return 'Internal server error. Please try again later.';
+          return const CryptoDetailError(
+            title: 'Unauthorized',
+            message: 'Access denied. Please check your API key.',
+          );
         default:
-          return 'A connection error occurred. Please check your internet.';
+          return CryptoDetailError(
+            title: 'Data Error',
+            message: 'Could not fetch price history (${error.response?.statusCode ?? 'Unknown'}).',
+          );
       }
     }
-    return 'An unexpected error occurred. Please try again.';
+    return CryptoDetailError(
+      title: 'Unexpected Error',
+      message: error.toString().replaceAll('Exception: ', ''),
+    );
   }
 
   Future<void> _onFetchCryptoDetailRequested(
@@ -49,7 +56,10 @@ class CryptoDetailBloc extends Bloc<CryptoDetailEvent, CryptoDetailState> {
       final priceHistory = await getPriceHistoryUseCase(event.cryptoId);
 
       if (priceHistory.isEmpty) {
-        emit(const CryptoDetailError('No price history found.'));
+        emit(const CryptoDetailError(
+          title: 'No Data',
+          message: 'No price history found for this cryptocurrency.',
+        ));
         return;
       }
 
@@ -65,7 +75,7 @@ class CryptoDetailBloc extends Bloc<CryptoDetailEvent, CryptoDetailState> {
         ),
       );
     } catch (error) {
-      emit(CryptoDetailError(_mapErrorToMessage(error)));
+      emit(_mapErrorToState(error));
     }
   }
 }

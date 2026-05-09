@@ -24,6 +24,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthLogoutRequested>(_onLogoutRequested);
   }
 
+  AuthFailure _mapErrorToState(Object error) {
+    String title = 'Authentication Error';
+    String message = error.toString().replaceAll('Exception: ', '');
+
+    if (message.toLowerCase().contains('invalid login credentials')) {
+      title = 'Invalid Credentials';
+      message = 'The email or password you entered is incorrect. Please double-check and try again.';
+    } else if (message.toLowerCase().contains('network') || message.toLowerCase().contains('connection')) {
+      title = 'Network Problem';
+      message = 'Could not connect to the authentication server. Please check your internet connection.';
+    } else if (message.toLowerCase().contains('user already registered')) {
+      title = 'Account Exists';
+      message = 'An account with this email already exists. Please try logging in instead.';
+    }
+
+    return AuthFailure(title: title, message: message);
+  }
+
   Future<void> _onLoginRequested(
     AuthLoginRequested event,
     Emitter<AuthState> emit,
@@ -39,7 +57,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       
       emit(const AuthAuthenticated());
     } catch (error) {
-      emit(AuthFailure(error.toString().replaceAll('Exception: ', '')));
+      emit(_mapErrorToState(error));
     }
   }
 
@@ -58,7 +76,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       emit(const AuthAuthenticated());
     } catch (error) {
-      emit(AuthFailure(error.toString().replaceAll('Exception: ', '')));
+      emit(_mapErrorToState(error));
     }
   }
 
@@ -71,7 +89,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await logoutUseCase();
       emit(const AuthUnauthenticated());
     } catch (error) {
-      emit(AuthFailure(error.toString().replaceAll('Exception: ', '')));
+      emit(_mapErrorToState(error));
     }
   }
 }

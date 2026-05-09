@@ -28,6 +28,40 @@ class _FavoritesPageState extends State<FavoritesPage> {
           return const Center(child: CircularProgressIndicator());
         }
 
+        if (state is CryptoError) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
+                  const SizedBox(height: 16),
+                  Text(
+                    state.title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    state.message,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => context.read<CryptoBloc>().add(const LoadFavoritesRequested()),
+                    child: const Text('Try Again'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
         if (state is CryptoLoaded) {
           final favorites = state.favorites;
 
@@ -73,16 +107,13 @@ class _FavoritesPageState extends State<FavoritesPage> {
                     context: context,
                     isScrollControlled: true,
                     backgroundColor: Colors.transparent,
+                    barrierColor: Colors.black.withValues(alpha: 0.5),
                     builder: (context) => CryptoDetailPage(crypto: crypto),
                   );
                 },
               );
             },
           );
-        }
-
-        if (state is CryptoError) {
-          return Center(child: Text('Error: ${state.message}'));
         }
 
         return const Center(child: Text('Loading data...'));

@@ -32,32 +32,59 @@ class CryptoBloc extends Bloc<CryptoEvent, CryptoState> {
     on<LoadFavoritesRequested>(_onLoadFavoritesRequested);
   }
 
-  String _mapErrorToMessage(Object error) {
+  CryptoError _mapErrorToState(Object error) {
     if (error is DioException) {
       if (error.type == DioExceptionType.connectionTimeout ||
           error.type == DioExceptionType.sendTimeout ||
           error.type == DioExceptionType.receiveTimeout) {
-        return 'The server is taking too long to respond. Please try again.';
+        return const CryptoError(
+          title: 'Connection Timed Out',
+          message: 'The server is taking too long to respond. Please check your internet and try again.',
+        );
       } else if (error.type == DioExceptionType.connectionError) {
-        return 'No internet connection. Please check your network settings.';
+        return const CryptoError(
+          title: 'No Internet Connection',
+          message: 'Please check your network settings and ensure you are connected to the internet.',
+        );
       }
 
       switch (error.response?.statusCode) {
         case 401:
-          return 'Unauthorized access. Please check your API key.';
+          return const CryptoError(
+            title: 'Unauthorized',
+            message: 'Access denied. Please check your API key or authentication status.',
+          );
         case 403:
-          return 'Access forbidden. You might have reached your rate limit.';
+          return const CryptoError(
+            title: 'Access Forbidden',
+            message: 'You do not have permission to access this data. Rate limit might be reached.',
+          );
         case 404:
-          return 'Requested data not found.';
+          return const CryptoError(
+            title: 'Not Found',
+            message: 'The requested cryptocurrency data could not be found on the server.',
+          );
         case 422:
-          return 'Invalid request parameters.';
+          return const CryptoError(
+            title: 'Invalid Request',
+            message: 'The server could not process your request parameters. Please try different filters.',
+          );
         case 500:
-          return 'Internal server error. Please try again later.';
+          return const CryptoError(
+            title: 'Server Error',
+            message: 'Something went wrong on the server side. Please try again later.',
+          );
         default:
-          return 'A connection error occurred. Please check your internet.';
+          return CryptoError(
+            title: 'Network Error',
+            message: 'A connection error occurred (${error.response?.statusCode ?? 'Unknown'}). Please try again.',
+          );
       }
     }
-    return 'An unexpected error occurred. Please try again.';
+    return CryptoError(
+      title: 'Unexpected Error',
+      message: error.toString().replaceAll('Exception: ', ''),
+    );
   }
 
   Future<void> _onFetchCryptosRequested(
@@ -92,7 +119,7 @@ class CryptoBloc extends Bloc<CryptoEvent, CryptoState> {
         ),
       );
     } catch (error) {
-      emit(CryptoError(_mapErrorToMessage(error)));
+      emit(_mapErrorToState(error));
     }
   }
 
@@ -126,7 +153,7 @@ class CryptoBloc extends Bloc<CryptoEvent, CryptoState> {
         ),
       );
     } catch (error) {
-      emit(CryptoError(_mapErrorToMessage(error)));
+      emit(_mapErrorToState(error));
     }
   }
 
@@ -150,7 +177,7 @@ class CryptoBloc extends Bloc<CryptoEvent, CryptoState> {
         emit(currentState.copyWith(cryptos: updatedCryptos));
       }
     } catch (error) {
-      emit(CryptoError(_mapErrorToMessage(error)));
+      emit(_mapErrorToState(error));
     }
   }
 
@@ -174,7 +201,7 @@ class CryptoBloc extends Bloc<CryptoEvent, CryptoState> {
         emit(currentState.copyWith(cryptos: updatedCryptos));
       }
     } catch (error) {
-      emit(CryptoError(_mapErrorToMessage(error)));
+      emit(_mapErrorToState(error));
     }
   }
 
@@ -209,7 +236,7 @@ class CryptoBloc extends Bloc<CryptoEvent, CryptoState> {
         );
       }
     } catch (error) {
-      emit(CryptoError(_mapErrorToMessage(error)));
+      emit(_mapErrorToState(error));
     }
   }
 }
