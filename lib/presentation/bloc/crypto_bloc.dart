@@ -34,6 +34,14 @@ class CryptoBloc extends Bloc<CryptoEvent, CryptoState> {
 
   String _mapErrorToMessage(Object error) {
     if (error is DioException) {
+      if (error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.sendTimeout ||
+          error.type == DioExceptionType.receiveTimeout) {
+        return 'The server is taking too long to respond. Please try again.';
+      } else if (error.type == DioExceptionType.connectionError) {
+        return 'No internet connection. Please check your network settings.';
+      }
+
       switch (error.response?.statusCode) {
         case 401:
           return 'Unauthorized access. Please check your API key.';
@@ -46,7 +54,7 @@ class CryptoBloc extends Bloc<CryptoEvent, CryptoState> {
         case 500:
           return 'Internal server error. Please try again later.';
         default:
-          return 'Connection error. Please check your internet.';
+          return 'A connection error occurred. Please check your internet.';
       }
     }
     return 'An unexpected error occurred. Please try again.';
